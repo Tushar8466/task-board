@@ -1,6 +1,6 @@
 require("dotenv/config");
 const { PrismaPg } = require("@prisma/adapter-pg");
-const { PrismaClient } = require("../generated/prisma/client");
+const { PrismaClient } = require("@prisma/client");
 
 const connectionString = process.env.DATABASE_URL;
 
