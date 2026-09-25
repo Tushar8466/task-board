@@ -122,4 +122,56 @@ app.get("/workspaces", authMiddleware, async (req, res) => {
   }
 });
 
+// Create a project inside a workspace
+app.post("/workspaces/:workspaceId/projects", authMiddleware, async (req, res) => {
+  try {
+    const workspaceId = parseInt(req.params.workspaceId);
+    const { name } = req.body;
+
+    if (!name) return res.status(400).json({ error: "Name is required" });
+
+    // check the user is actually a member of this workspace
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: req.userId } },
+    });
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this workspace" });
+    }
+
+    const project = await prisma.project.create({
+      data: { name, workspaceId },
+    });
+
+    res.json(project);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not create project" });
+  }
+});
+
+// List projects in a workspace
+app.get("/workspaces/:workspaceId/projects", authMiddleware, async (req, res) => {
+  try {
+    const workspaceId = parseInt(req.params.workspaceId);
+
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: req.userId } },
+    });
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this workspace" });
+    }
+
+    const projects = await prisma.project.findMany({
+      where: { workspaceId },
+    });
+
+    res.json(projects);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not fetch projects" });
+  }
+});
+
 app.listen(4000, () => console.log("Server running on port 4000"));

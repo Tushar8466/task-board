@@ -27,6 +27,7 @@ model Workspace {
   ownerId   Int
   owner     User     @relation(fields: [ownerId], references: [id])
   members   WorkspaceMember[]
+  projects  Project[]
   createdAt DateTime @default(now())
 }
 
@@ -39,4 +40,12 @@ model WorkspaceMember {
   user        User      @relation(fields: [userId], references: [id])
 
   @@unique([workspaceId, userId])
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime @default(now())
 }
